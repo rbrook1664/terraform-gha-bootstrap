@@ -1,0 +1,60 @@
+name: "Terraform Apply"
+description: "Terraform Apply Composite Action"
+inputs:
+  deploy:
+    required: true
+    description: "Desired state for the deployment. true=deploy | false=destroy"
+  aws-region:
+    required: true
+    description: "AWS Region"
+  init-outcome:
+    required: true
+    description: "Terraform init command outcome"
+  extra-args:
+    required: false
+    description: "Terraform apply command extra arguments"
+  working-directory:
+    required: true
+    description: "The Directory where the terraform stack lives on the Repository"
+    default: "terraform"
+outputs:
+  exitcode:
+    description: "Terraform Apply Exit code"
+    value: ${{ steps.apply.outputs.exitcode }}
+runs:
+  using: "composite"
+  steps:
+    - name: Download plan.tfout
+      uses: actions/download-artifact@v4
+      with:
+        name: terraform-plan
+        path: ${{ inputs.working-directory }}
+        merge-multiple: true
+    - name: Define Terraform Apply Command
+      id: tf_apply_command
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        if ${{ inputs.deploy }}
+        then
+          echo "APPLY_COMMAND=terraform apply -auto-approve" >> $GITHUB_OUTPUT
+        else
+          echo "APPLY_COMMAND=terraform apply -destroy -auto-approve" >> $GITHUB_OUTPUT
+        fi
+    - name: Add extra arguments mask
+      if: ${{ inputs.extra-args != '' }}
+      shell: bash
+      run: echo "::add-mask::${{ inputs.extra-args }}"
+    - name: Terraform Apply
+      id: apply
+      working-directory: ${{ inputs.working-directory }}
+      continue-on-error: true
+      shell: bash
+      run: |
+        ${{ steps.tf_apply_command.outputs.APPLY_COMMAND }} plan.tfout \
+          -no-color \
+          ${{ inputs.extra-args }} | tee apply.out
+    - name: Terraform Apply Status
+      if: steps.apply.outcome == 'failure'
+      shell: bash
+      run: exit 1

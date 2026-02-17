@@ -1,0 +1,79 @@
+name: "Terraform Plan"
+description: "Terraform Plan Composite Action"
+inputs:
+  deploy:
+    required: true
+    description: "Desired state for the deployment. true=deploy | false=destroy"
+    default: "true"
+  aws-region:
+    required: true
+    description: "AWS Region"
+    default: "eu-west-2"
+  init-outcome:
+    required: true
+    description: "Terraform init command outcome"
+  extra-args:
+    required: false
+    description: "Terraform plan command extra arguments"
+  working-directory:
+    required: true
+    description: "The Directory where the terraform stack lives on the Repository"
+    default: "terraform"
+outputs:
+  exitcode:
+    description: "Terraform Plan Exit code"
+    value: ${{ steps.plan.outputs.exitcode }}
+runs:
+  using: "composite"
+  steps:
+    - name: Terraform Format and style
+      id: fmt
+      continue-on-error: true
+      working-directory:  ${{ inputs.working-directory }}
+      shell: bash
+      run: terraform fmt -check -diff -recursive
+    - name: Terraform Validate
+      id: validate
+      working-directory:  ${{ inputs.working-directory }}
+      continue-on-error: true
+      shell: bash
+      run: terraform validate -no-color
+    - name: Define Terraform Plan Command # 'terraform plan' or 'terraform plan -destroy'
+      id: tf_plan_command
+      working-directory:  ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        if ${{ inputs.deploy }}
+        then
+          echo "PLAN_COMMAND=terraform plan" >> $GITHUB_OUTPUT
+        else
+          echo "PLAN_COMMAND=terraform plan -destroy" >> $GITHUB_OUTPUT
+        fi
+    - name: Add extra arguments mask
+      if: ${{ inputs.extra-args != '' }}
+      shell: bash
+      run: echo "::add-mask::${{ inputs.extra-args }}"
+    - name: Terraform Plan
+      id: plan
+      working-directory: ${{ inputs.working-directory }}
+      continue-on-error: true
+      shell: bash
+      run: |
+        ${{ steps.tf_plan_command.outputs.PLAN_COMMAND }} \
+          -no-color \
+          -detailed-exitcode \
+          -input=false \
+          -out="plan.tfout"
+          ${{ inputs.extra-args }}
+    - name: Upload Terraform Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: |
+          ${{ inputs.working-directory }}/plan.tfout
+          ${{ inputs.working-directory }}/.terraform.lock.hcl
+        include-hidden-files: true
+    # - name: Terraform Plan Status
+    #   if: steps.plan.outcome == 'failure'
+    #   shell: bash
+    #   run: exit 1

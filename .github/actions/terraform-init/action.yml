@@ -1,0 +1,60 @@
+name: "Terraform Init"
+description: "Terraform Init Composite Action"
+inputs:
+  tf-version:
+    required: true
+    description: "Terraform Version"
+  aws-region:
+    required: true
+    description: "AWS Region"
+  terraform-wrapper:
+    required: true
+    description: "Terraform Wrapper"
+  terraform-execution-iam-role-arn:
+    required: false
+    description: "Terraform Execution IAM Role ARN"
+  working-directory:
+    required: true
+    description: "The Directory where the terraform stack lives on the Repository"
+    default: "terraform"
+  backend-bucket:
+    required: true
+    description: "The S3 bucket in which state file is stored for terraform backend config"
+  backend-key:
+    required: true
+    description: "The key for the S3 object storing the terraform state"
+  backend-region:
+    required: true
+    description: "The region to use for terraform backend"
+    default: "eu-west-2"
+  backend-encrypt:
+    required: true
+    description: "True to enable encryption of the remote tf state"
+    default: "true"
+  backend-use-lockfile:
+    required: true
+    description: "True to enable the use of a lockfile in S3 so dynamodb is not required for state locks"
+    default: "true"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check Variable
+      shell: bash
+      run: echo "${{ inputs.working-directory }}"
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.tf-version }}
+        terraform_wrapper: ${{ inputs.terraform-wrapper }}
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.terraform-execution-iam-role-arn }}
+        aws-region: ${{ inputs.aws-region }}
+        role-duration-seconds: 1200
+    - name: Terraform init
+      id: tfinit
+      shell: bash
+      run: terraform init -upgrade -migrate-state -backend-config=bucket=${{ inputs.backend-bucket }} -backend-config=key=${{ inputs.backend-key }} -backend-config=region=${{ inputs.backend-region }} -backend-config=encrypt=${{ inputs.backend-encrypt }} -backend-config=use_lockfile=${{ inputs.backend-use-lockfile }}
+      working-directory: ${{ inputs.working-directory }}
