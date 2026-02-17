@@ -1,24 +1,33 @@
-# terraform-gha-bootstrap
-Terraform Bootstrap Template
+🚀 Terraform Bootstrap Template
 
-This repository is a Terraform bootstrap template designed to quickly set up a new Terraform project with:
+A production-ready Terraform starter repository for spinning up new infrastructure repos quickly, securely, and consistently.
 
-GitHub Actions CI pipeline
+✨ What You Get
 
-Pre-commit hooks
+✅ GitHub Actions CI pipeline
 
-Standard project structure
+✅ Pre-commit hooks enforced
 
-Terraform best practices
+✅ Clean Terraform project structure
 
-Secure-by-default configuration
+✅ Remote state ready pattern
 
-It provides the foundational scaffolding required to start managing infrastructure safely and consistently.
+✅ Secure-by-default approach
 
-📦 What This Repository Provides
-.github/
+✅ Opinionated best practices
 
-GitHub Actions workflows for:
+📦 Repository Structure
+.
+├── .github/
+├── terraform/
+├── .gitignore
+├── .pre-commit-config.yaml
+├── install-pre-commit.sh
+└── README.md
+
+🧱 Repository Components
+<details> <summary><strong>📂 .github/ — CI/CD Workflows</strong></summary>
+Includes
 
 Terraform fmt
 
@@ -28,107 +37,38 @@ Terraform plan
 
 Optional apply
 
-OIDC-ready CI configuration (recommended)
+OIDC-ready configuration
 
-This enables CI/CD for Terraform from day one.
+Why It Matters
 
-terraform/
+Prevents broken Terraform from merging
 
-Contains the Terraform project structure:
+Enforces formatting consistency
 
-main.tf
+Allows safe, reviewable infrastructure changes
 
-providers.tf
+Eliminates manual CLI drift
 
-variables.tf
+</details>
+<details> <summary><strong>📂 terraform/ — Infrastructure Code</strong></summary>
 
-outputs.tf
+This is where your actual infrastructure lives.
 
-Optional backend.tf
+Standard Files
 
-This is where infrastructure code lives.
+main.tf → Core resources
 
-.gitignore
+providers.tf → Provider configuration
 
-Preconfigured to ignore:
+variables.tf → Input variables
 
-.terraform/
+outputs.tf → Outputs
 
-terraform.tfstate
+backend.tf (optional) → Remote state configuration
 
-*.tfstate.*
+Recommended Pattern
 
-.terraform.lock.hcl (optional depending on policy)
-
-Sensitive files
-
-Prevents committing local state and credentials.
-
-.pre-commit-config.yaml
-
-Preconfigured hooks for:
-
-terraform fmt
-
-terraform validate
-
-tflint
-
-trailing-whitespace
-
-end-of-file-fixer
-
-YAML linting
-
-Ensures code quality before commit.
-
-install-pre-commit.sh
-
-Convenience script to:
-
-chmod +x install-pre-commit.sh
-./install-pre-commit.sh
-
-
-This installs:
-
-pre-commit
-
-Terraform hooks
-
-Git hook integration
-
-🚀 Quick Start
-1️⃣ Clone This Template
-git clone <this-repo> my-new-infra-repo
-cd my-new-infra-repo
-
-2️⃣ Install Pre-commit Hooks
-./install-pre-commit.sh
-
-
-Or manually:
-
-pip install pre-commit
-pre-commit install
-
-3️⃣ Initialize Terraform
-cd terraform
-terraform init
-terraform fmt
-terraform validate
-
-4️⃣ Configure Remote State (Recommended)
-
-Before applying infrastructure, configure:
-
-S3 backend
-
-DynamoDB locking (optional but recommended)
-
-KMS encryption
-
-Example:
+Use remote state:
 
 terraform {
   backend "s3" {
@@ -140,129 +80,159 @@ terraform {
   }
 }
 
-🏗 Recommended Usage Pattern
 
-This template is ideal for:
+⚠️ Do not use variables inside backend blocks.
 
-New infrastructure repositories
+</details>
+<details> <summary><strong>🧹 .pre-commit-config.yaml — Code Quality Enforcement</strong></summary>
 
-Environment-based repos (dev/test/prod)
-
-Service-based repos
-
-Bootstrap repositories
-
-🧠 What “Bootstrap” Means
-
-This template can also be used as a bootstrap repository, meaning:
-
-It can create foundational infrastructure such as:
-
-Terraform state S3 bucket
-
-DynamoDB lock table
-
-KMS encryption key
-
-GitHub OIDC IAM roles
-
-Shared networking or org resources
-
-Once bootstrapped, other Terraform repos can use the remote backend safely.
-
-🔐 Security Best Practices
-
-This template encourages:
-
-Remote state storage
-
-State locking
-
-Least-privilege IAM
-
-OIDC-based GitHub authentication
-
-No hardcoded credentials
-
-Pre-commit validation
-
-📁 Suggested Repository Structure
-.
-├── .github/
-│   └── workflows/
-├── terraform/
-│   ├── main.tf
-│   ├── providers.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── backend.tf
-├── .gitignore
-├── .pre-commit-config.yaml
-├── install-pre-commit.sh
-└── README.md
-
-🔄 Typical Workflow
-
-Developer writes Terraform code
-
-Pre-commit runs automatically
-
-Code pushed to GitHub
-
-GitHub Actions runs:
+Automatically runs before every commit:
 
 terraform fmt
 
 terraform validate
 
-terraform plan
+tflint
 
-Review plan
+YAML linting
 
-Apply via CI (optional)
+Trailing whitespace removal
 
-🛠 Extending This Template
+EOF fixing
 
-You can extend this template to include:
+Install
+./install-pre-commit.sh
+
+
+Prevents broken code from ever reaching CI.
+
+</details>
+<details> <summary><strong>🚫 .gitignore — Safe Defaults</strong></summary>
+
+Prevents committing:
+
+.terraform/
+
+*.tfstate
+
+*.tfstate.backup
+
+Sensitive files
+
+Local override files
+
+Never commit Terraform state.
+
+</details>
+⚡ Quick Start
+<details> <summary><strong>1️⃣ Clone the Template</strong></summary>
+git clone <this-repo> my-new-infra
+cd my-new-infra
+
+</details>
+<details> <summary><strong>2️⃣ Install Pre-Commit Hooks</strong></summary>
+chmod +x install-pre-commit.sh
+./install-pre-commit.sh
+
+</details>
+<details> <summary><strong>3️⃣ Initialise Terraform</strong></summary>
+cd terraform
+terraform init
+terraform fmt
+terraform validate
+
+</details>
+🏗 Bootstrap Mode (Optional)
+
+This template can also act as a bootstrap repository.
+
+<details> <summary><strong>What Does Bootstrap Mean?</strong></summary>
+
+Bootstrapping means creating the infrastructure Terraform itself depends on:
+
+S3 state bucket
+
+DynamoDB lock table
+
+KMS key
+
+GitHub OIDC IAM roles
+
+Shared networking
+
+You run bootstrap once.
+
+Then all other Terraform repos use that remote state safely.
+
+</details>
+🔐 Security Principles
+
+Remote state required for teams
+
+No hardcoded credentials
+
+OIDC preferred over static IAM keys
+
+Enforced formatting & validation
+
+Locking recommended (DynamoDB)
+
+🔄 Typical Developer Workflow
+<details> <summary><strong>Day-to-Day Flow</strong></summary>
+
+Write Terraform
+
+Pre-commit runs automatically
+
+Push to GitHub
+
+CI runs fmt, validate, plan
+
+Review plan output
+
+Merge and apply (if enabled)
+
+Safe. Repeatable. Predictable.
+
+</details>
+🧠 When To Use This Template
+
+New service infrastructure repo
+
+Environment repo (dev/test/prod)
+
+Bootstrap infra repo
+
+Platform team standardisation
+
+Terraform onboarding
+
+📈 Recommended Evolution
+
+As your infra matures, consider adding:
 
 Environment folders (env/dev, env/prod)
 
-Shared modules
+Shared modules repo
 
-Makefile commands
+Policy as Code
 
-Terragrunt (if desired)
+Cost estimation checks
 
-Policy as Code (OPA, Sentinel)
+Security scanning
 
-📌 When To Use This Template
+Drift detection
 
-Use this repository when:
+🎯 Design Philosophy
 
-Starting a new Terraform project
+This template is:
 
-Standardising infrastructure repos across teams
+Opinionated but flexible
 
-Enforcing CI/CD from day one
+Minimal but production-ready
 
-Bootstrapping Terraform infrastructure safely
+CI-first
 
-⚠️ Important Notes
+Security-aware
 
-Do not commit .tfstate files.
-
-Always use remote state for team environments.
-
-Do not reference variables or resources inside backend blocks.
-
-Ensure CI uses the same Terraform version as local.
-
-👥 Intended Audience
-
-DevOps engineers
-
-Platform teams
-
-Cloud engineers
-
-Infrastructure teams
+Team-friendly 
