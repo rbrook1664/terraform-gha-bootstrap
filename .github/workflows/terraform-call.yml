@@ -1,35 +1,34 @@
-name: Call a reusable workflow
+# name: Call a reusable workflow
 
-on:
-  push:
-    branches: 
-      - main
-      - Terraform-infra
-    paths:
-      - 'terraform/**'
-jobs:
-  call-workflow:
-    permissions:
-      contents: read      # Required to checkout repository.
-      id-token: write      # Required to request the JWT.
-      issues: write
+# on:
+#   push:
+#     branches: 
+#       - main
+#       - Terraform-infra
+#     paths:
+#       - 'terraform/**'
+# jobs:
+#   call-workflow:
+#     permissions:
+#       contents: read      # Required to checkout repository.
+#       id-token: write      # Required to request the JWT.
+#       issues: write
 
-    uses: ./.github/workflows/terraform-reusable.yml
-    with:
-      aws-region: eu-west-2
-      working-directory: "terraform"
-      # tf-version: 1.12.2
-      tf-version: 1.14.4
-      terraform-wrapper: false
-      deploy: true
+#     uses: ./.github/workflows/terraform-reusable.yml
+#     with:
+#       aws-region: eu-west-2
+#       working-directory: "terraform"
+#       # tf-version: 1.12.2
+#       tf-version: 1.14.4
+#       terraform-wrapper: false
+#       deploy: true
 
-    secrets:
-      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-      # GIT_PAT: ${{ secrets.GIT_PAT }}
-      TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
-      TF_STATE_KEY: ${{ secrets.TF_STATE_KEY }}
+#     secrets:
+#       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+#       # GIT_PAT: ${{ secrets.GIT_PAT }}
+#       TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+#       TF_STATE_KEY: ${{ secrets.TF_STATE_KEY }}
 
-# 
 
 
 
